@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Container, Form, Image } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft } from "react-bootstrap-icons";
 import BlogLike from "../../components/likes/BlogLike";
 import "./styles.css";
 
@@ -13,7 +14,7 @@ const Blog = () => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const getComments = async () => {
+  const getComments = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
 
@@ -37,7 +38,7 @@ const Blog = () => {
       console.log(error);
       setComments([]);
     }
-  };
+  }, [params.id]);
 
   useEffect(() => {
     const getSinglePost = async () => {
@@ -70,7 +71,7 @@ const Blog = () => {
     };
 
     loadData();
-  }, [params.id, navigate]);
+  }, [params.id, navigate, getComments]);
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -104,81 +105,100 @@ const Blog = () => {
     }
   };
 
-  if (loading) {
-    return <div>loading</div>;
-  }
-
-  if (!blog) {
-    return <div>Post non trovato</div>;
-  }
+  if (loading) return <div className="blog-loading">Loading...</div>;
+  if (!blog) return <div className="blog-loading">Post non trovato</div>;
 
   return (
-    <div className="blog-details-root">
-      <Container>
-        <Image className="blog-details-cover" src={blog.cover} fluid />
-        <h1 className="blog-details-title">{blog.title}</h1>
+    <div className="blog-details-page">
+      <Container className="blog-details-wrapper">
+        <Button
+          variant="outline-dark"
+          onClick={() => navigate("/")}
+          className="blog-back-button"
+        >
+          <ArrowLeft style={{ marginRight: "8px" }} />
+          Torna ai post
+        </Button>
 
-        <div className="blog-details-container">
-          <div className="blog-details-author">
-            <div>{blog.author}</div>
-          </div>
-          <div className="blog-details-info">
-            <div>{blog.createdAt}</div>
-            <div>{`lettura da ${blog.readTime?.value} ${blog.readTime?.unit}`}</div>
-            <div style={{ marginTop: 20 }}>
-              <BlogLike defaultLikes={["123"]} onChange={console.log} />
+        <section className="blog-hero-card">
+          <Image className="blog-details-cover" src={blog.cover} fluid />
+          <div className="blog-hero-content">
+            <span className="blog-category-badge">{blog.category}</span>
+            <h1 className="blog-details-title">{blog.title}</h1>
+
+            <div className="blog-meta-row">
+              <div className="blog-meta-left">
+                <span className="blog-author-name">{blog.author}</span>
+                <span className="blog-meta-separator">•</span>
+                <span>{blog.readTime?.value} {blog.readTime?.unit} read</span>
+                {blog.createdAt && (
+                  <>
+                    <span className="blog-meta-separator">•</span>
+                    <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                  </>
+                )}
+              </div>
+
+              <div className="blog-meta-right">
+                <BlogLike defaultLikes={["999", "888"]} onChange={console.log} />
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div
-          dangerouslySetInnerHTML={{
-            __html: blog.content,
-          }}
-        ></div>
+        <section className="blog-content-card">
+          <div
+            className="blog-content"
+            dangerouslySetInnerHTML={{
+              __html: blog.content,
+            }}
+          />
+        </section>
 
-        <h3 style={{ marginTop: "40px", marginBottom: "20px" }}>Lascia un commento</h3>
+        <section className="blog-comment-form-card">
+          <h3 className="section-title">Leave a comment</h3>
 
-        <Form onSubmit={handleCommentSubmit} style={{ marginBottom: "40px" }}>
-          <Form.Group className="mb-3">
-            <Form.Label>Commento</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Scrivi un commento"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-          </Form.Group>
+          <Form onSubmit={handleCommentSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Comment</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                placeholder="Write your comment"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              />
+            </Form.Group>
 
-          <Button type="submit" variant="dark">
-            Invia commento
-          </Button>
-        </Form>
+            <Button type="submit" variant="dark">
+              Invia commento
+            </Button>
+          </Form>
+        </section>
 
-        <h3 style={{ marginTop: "40px", marginBottom: "20px" }}>Commenti</h3>
+        <section className="blog-comments-card">
+          <h3 className="section-title">Comments</h3>
 
-        {comments.length === 0 ? (
-          <p>Nessun commento</p>
-        ) : (
-          comments.map((comment) => (
-            <div
-              key={comment._id}
-              style={{
-                marginBottom: "20px",
-                padding: "15px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                backgroundColor: "#fff",
-              }}
-            >
-              <strong>{comment.author}</strong>
-              <p style={{ marginTop: "10px", marginBottom: 0 }}>
-                {comment.text}
-              </p>
+          {comments.length === 0 ? (
+            <p className="no-comments">Nessun commento</p>
+          ) : (
+            <div className="comments-list">
+              {comments.map((comment) => (
+                <div key={comment._id} className="comment-card">
+                  <div className="comment-card-header">
+                    <strong>{comment.author || "Anonymous"}</strong>
+                    {comment.createdAt && (
+                      <span className="comment-date">
+                        {new Date(comment.createdAt).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="comment-text">{comment.text}</p>
+                </div>
+              ))}
             </div>
-          ))
-        )}
+          )}
+        </section>
       </Container>
     </div>
   );

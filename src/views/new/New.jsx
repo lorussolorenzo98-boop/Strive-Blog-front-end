@@ -5,12 +5,13 @@ import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import "./styles.css";
 import draftToHtml from "draftjs-to-html";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "react-bootstrap-icons";
 
 const NewBlogPost = () => {
   const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       navigate("/login");
     }
@@ -57,9 +58,7 @@ const NewBlogPost = () => {
         throw new Error("Errore nella creazione del post");
       }
 
-      const createdPost = await response.json();
-      console.log(createdPost);
-
+      await response.json();
       navigate("/");
     } catch (error) {
       console.log(error);
@@ -68,77 +67,97 @@ const NewBlogPost = () => {
   };
 
   return (
-    <Container className="new-blog-container">
-      <Form className="mt-5" onSubmit={handleSubmit}>
-        <Form.Group controlId="blog-form" className="mt-3">
-          <Form.Label>Titolo</Form.Label>
-          <Form.Control
-            size="lg"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </Form.Group>
+    <div className="new-page">
+      <Container className="new-blog-container">
+        <Button
+          variant="outline-dark"
+          onClick={() => navigate("/")}
+          className="back-button"
+        >
+          <ArrowLeft style={{ marginRight: "8px" }} />
+          Torna ai post
+        </Button>
 
-        <Form.Group controlId="blog-category" className="mt-3">
-          <Form.Label>Categoria</Form.Label>
-          <Form.Control
-            size="lg"
-            as="select"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="">Seleziona una categoria</option>
-            <option value="Science">Science</option>
-            <option value="Math">Math</option>
-            <option value="History">History</option>
-            <option value="Technology">Technology</option>
-            <option value="General">General</option>
-          </Form.Control>
-        </Form.Group>
+        <div className="new-blog-card">
+          <div className="new-blog-header">
+            <h1 className="new-blog-title">Create a new article</h1>
+            <p className="new-blog-subtitle">
+              Share ideas, stories and insights with your readers.
+            </p>
+          </div>
 
-        <Form.Group controlId="blog-author" className="mt-3">
-          <Form.Label>Autore</Form.Label>
-          <Form.Control
-            size="lg"
-            placeholder="Author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        </Form.Group>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="blog-form" className="mt-3">
+              <Form.Label>Titolo</Form.Label>
+              <Form.Control
+                size="lg"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </Form.Group>
 
-        <Form.Group controlId="blog-cover" className="mt-3">
-          <Form.Label>Cover</Form.Label>
-          <Form.Control
-            size="lg"
-            placeholder="Inserisci URL immagine"
-            value={cover}
-            onChange={(e) => setCover(e.target.value)}
-          />
-        </Form.Group>
+            <Form.Group controlId="blog-category" className="mt-3">
+              <Form.Label>Categoria</Form.Label>
+              <Form.Control
+                size="lg"
+                as="select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="">Seleziona una categoria</option>
+                <option value="Science">Science</option>
+                <option value="Math">Math</option>
+                <option value="History">History</option>
+                <option value="Technology">Technology</option>
+                <option value="General">General</option>
+              </Form.Control>
+            </Form.Group>
 
-        <Form.Group controlId="blog-content" className="mt-3">
-          <Form.Label>Contenuto Blog</Form.Label>
-          <Editor onChange={handleEditorChange} className="new-blog-content" />
-        </Form.Group>
+            <Form.Group controlId="blog-author" className="mt-3">
+              <Form.Label>Autore</Form.Label>
+              <Form.Control
+                size="lg"
+                placeholder="Author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+              />
+            </Form.Group>
 
-        <Form.Group className="d-flex mt-3 justify-content-end">
-          <Button type="reset" size="lg" variant="outline-dark">
-            Reset
-          </Button>
-          <Button
-            type="submit"
-            size="lg"
-            variant="dark"
-            style={{
-              marginLeft: "1em",
-            }}
-          >
-            Invia
-          </Button>
-        </Form.Group>
-      </Form>
-    </Container>
+            <Form.Group controlId="blog-cover" className="mt-3">
+              <Form.Label>Cover</Form.Label>
+              <Form.Control
+                size="lg"
+                placeholder="Inserisci URL immagine"
+                value={cover}
+                onChange={(e) => setCover(e.target.value)}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="blog-content" className="mt-4">
+              <Form.Label>Contenuto Blog</Form.Label>
+              <div className="editor-wrapper">
+                <Editor onChange={handleEditorChange} className="new-blog-content" />
+              </div>
+            </Form.Group>
+
+            <Form.Group className="d-flex mt-4 justify-content-end">
+              <Button type="reset" size="lg" variant="outline-dark">
+                Reset
+              </Button>
+              <Button
+                type="submit"
+                size="lg"
+                variant="dark"
+                style={{ marginLeft: "1em" }}
+              >
+                Invia
+              </Button>
+            </Form.Group>
+          </Form>
+        </div>
+      </Container>
+    </div>
   );
 };
 
