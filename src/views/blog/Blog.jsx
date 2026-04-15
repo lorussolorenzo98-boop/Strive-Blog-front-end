@@ -19,7 +19,7 @@ const Blog = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:3000/blogPosts/${params.id}/comments`,
+        `${process.env.REACT_APP_API_URL}/blogPosts/${params.id}/comments`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -41,37 +41,47 @@ const Blog = () => {
   }, [params.id]);
 
   useEffect(() => {
-    const getSinglePost = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const getSinglePost = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-        const response = await fetch(`http://localhost:3000/blogPosts/${params.id}`, {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/blogPosts/${params.id}`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        if (!response.ok) {
-          navigate("/");
-          return;
         }
+      );
 
-        const data = await response.json();
-        setBlog(data);
-      } catch (error) {
-        console.log(error);
+      if (!response.ok) {
         navigate("/");
+        return;
       }
-    };
 
-    const loadData = async () => {
-      await getSinglePost();
-      await getComments();
-      setLoading(false);
-    };
+      const data = await response.json();
 
-    loadData();
-  }, [params.id, navigate, getComments]);
+      if (data?.blogPost) {
+        setBlog(data.blogPost);
+      } else if (data?.post) {
+        setBlog(data.post);
+      } else {
+        setBlog(data);
+      }
+    } catch (error) {
+      console.log("ERRORE GET SINGLE POST:", error);
+      navigate("/");
+    }
+  };
+
+  const loadData = async () => {
+    await getSinglePost();
+    await getComments();
+    setLoading(false);
+  };
+
+  loadData();
+}, [params.id, navigate, getComments]);
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
@@ -80,7 +90,7 @@ const Blog = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:3000/blogPosts/${params.id}/comments`,
+        `${process.env.REACT_APP_API_URL}/blogPosts/${params.id}/comments`,
         {
           method: "POST",
           headers: {
